@@ -134,7 +134,7 @@ function App() {
       )}
 
       {appState === 'RACE' && (
-        <div style={{ position: 'relative', height: '80vh', display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
           <RaceCanvas 
             key={raceId}
             employees={employees}

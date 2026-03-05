@@ -16,7 +16,7 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, existing
   
   // Configuration
   const BOARD_WIDTH = 800;
-  const BOARD_HEIGHT = 1000;
+  const BOARD_HEIGHT = Math.max(600, window.innerHeight - 250); // Responsive height with padding
   
   useEffect(() => {
     if (!sceneRef.current) return;
@@ -63,9 +63,11 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, existing
 
     // Pins (Pachinko Style)
     const pins: Matter.Body[] = [];
-    const rows = 15;
     const startY = 150;
     const spacing = 50;
+    // We want at least 150px clearance from the bottom of the pins to the start of the funnel (BOARD_HEIGHT - 100)
+    // So pins should not go lower than BOARD_HEIGHT - 250
+    const rows = Math.floor((BOARD_HEIGHT - 350) / spacing);
 
     for (let row = 0; row < rows; row++) {
       const cols = row % 2 === 0 ? 15 : 16;
