@@ -5,11 +5,12 @@ import type { Employee, PhysicsConfig } from '../types';
 interface Props {
   employees: Employee[];
   physicsConfig: PhysicsConfig;
+  winningPlaces: number;
   existingWinners: string[];
   onFinish: (newWinnerIds: string[]) => void;
 }
 
-export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, existingWinners, onFinish }) => {
+export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningPlaces, existingWinners, onFinish }) => {
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
@@ -229,14 +230,14 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, existing
 
           // Ignore if we already have enough winners total
           const totalWinners = existingWinners.length + localWinners.length;
-          if (totalWinners >= 3) return;
+          if (totalWinners >= winningPlaces) return;
 
           // It's a valid new winner!
           localWinners.push(empId);
           onFinish([...localWinners]); // Update parent with LOCAL winners only
           
           // Win Sound
-          if ((existingWinners.length + localWinners.length) === 3 && physicsConfig.soundEnabled) {
+          if ((existingWinners.length + localWinners.length) === winningPlaces && physicsConfig.soundEnabled) {
                 import('../audio/SoundManager').then(({ soundManager }) => {
                   soundManager.playWin();
                 });

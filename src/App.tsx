@@ -9,6 +9,7 @@ import confetti from 'canvas-confetti';
 function App() {
   const [appState, setAppState] = useState<AppState>('CONFIG');
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [winningPlaces, setWinningPlaces] = useState(1);
   // const [winners, setWinners] = useState<string[]>([]); // Removed in favor of locked+active
   const [physicsConfig, setPhysicsConfig] = useState<PhysicsConfig>({
     restitution: 0.5,
@@ -72,7 +73,7 @@ function App() {
     // Check total count
     const totalCount = lockedWinners.length + newWinnerIds.length;
     
-    if (totalCount >= 3 || totalCount === employees.length) {
+    if (totalCount >= winningPlaces || totalCount === employees.length) {
       // Trigger confetti
       confetti({
         particleCount: 150,
@@ -125,10 +126,12 @@ function App() {
         <Configuration 
           employees={employees}
           physicsConfig={physicsConfig}
+          winningPlaces={winningPlaces}
           onAdd={handleAddEmployee}
           onRemove={handleRemoveEmployee}
           onUpdateEntries={handleUpdateEntries}
           onUpdatePhysics={setPhysicsConfig}
+          onUpdateWinningPlaces={setWinningPlaces}
           onStart={handleStartRace}
         />
       )}
@@ -139,6 +142,7 @@ function App() {
             key={raceId}
             employees={employees}
             physicsConfig={physicsConfig}
+            winningPlaces={winningPlaces}
             existingWinners={lockedWinners}
             onFinish={handleRaceFinish}
           />
@@ -162,8 +166,8 @@ function App() {
               );
             })}
             
-            {/* Show Restart button if we haven't found 3 winners yet */}
-            {allWinners.length < 3 && allWinners.length < employees.length && (
+            {/* Show Restart button if we haven't found target winners yet */}
+            {allWinners.length < winningPlaces && allWinners.length < employees.length && (
               <button 
                 onClick={handleRestartRace}
                 style={{

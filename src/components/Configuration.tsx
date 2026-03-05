@@ -4,20 +4,24 @@ import type { Employee, PhysicsConfig } from '../types';
 interface Props {
   employees: Employee[];
   physicsConfig: PhysicsConfig;
+  winningPlaces: number;
   onAdd: (name: string, entries: number) => void;
   onRemove: (id: string) => void;
   onUpdateEntries: (id: string, entries: number) => void;
   onUpdatePhysics: (config: PhysicsConfig) => void;
+  onUpdateWinningPlaces: (n: number) => void;
   onStart: () => void;
 }
 
 export const Configuration: React.FC<Props> = ({ 
   employees, 
   physicsConfig,
+  winningPlaces,
   onAdd, 
   onRemove, 
   onUpdateEntries,
   onUpdatePhysics,
+  onUpdateWinningPlaces,
   onStart 
 }) => {
   const [newName, setNewName] = useState('');
@@ -93,6 +97,21 @@ export const Configuration: React.FC<Props> = ({
               value={physicsConfig.gravity}
               onChange={(e) => onUpdatePhysics({ ...physicsConfig, gravity: parseFloat(e.target.value) })}
               style={{ width: '100%', accentColor: 'var(--accent-green)' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+              Winning Places: {winningPlaces}
+            </label>
+            <input 
+              type="range" 
+              min="1" 
+              max="10" 
+              step="1"
+              value={winningPlaces}
+              onChange={(e) => onUpdateWinningPlaces(parseInt(e.target.value, 10))}
+              style={{ width: '100%', accentColor: 'var(--accent-magenta)' }}
             />
           </div>
 

@@ -10,23 +10,20 @@ interface Props {
 export const Podium: React.FC<Props> = ({ winners, employees, onReset }) => {
   const getEmployee = (id: string) => employees.find(e => e.id === id);
 
-  const first = getEmployee(winners[0]);
-  const second = getEmployee(winners[1]);
-  const third = getEmployee(winners[2]);
-
-  const renderStep = (emp: Employee | undefined, place: number) => {
+  const renderStep = (empId: string, place: number) => {
+    const emp = getEmployee(empId);
     if (!emp) return null;
     
-    const height = place === 1 ? '200px' : place === 2 ? '150px' : '120px';
-    const color = place === 1 ? '#ffd700' : place === 2 ? '#c0c0c0' : '#cd7f32';
+    const height = Math.max(80, 200 - (place - 1) * 40) + 'px';
+    const color = place === 1 ? '#ffd700' : place === 2 ? '#c0c0c0' : place === 3 ? '#cd7f32' : '#555';
     
     return (
-      <div style={{
+      <div key={empId + place} style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-end',
-        margin: '0 1rem'
+        margin: '0 0.5rem'
       }}>
         <div style={{
           marginBottom: '1rem',
@@ -34,20 +31,20 @@ export const Podium: React.FC<Props> = ({ winners, employees, onReset }) => {
           animation: 'fadeInUp 0.5s ease-out'
         }}>
           <div style={{ 
-            fontSize: '1.5rem', 
+            fontSize: '1.2rem', 
             fontWeight: 800, 
             color: emp.color,
             textShadow: `0 0 10px ${emp.color}`
           }}>
             {emp.name}
           </div>
-          <div style={{ color: 'var(--text-secondary)' }}>
-            {place === 1 ? '1st Place' : place === 2 ? '2nd Place' : '3rd Place'}
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            {place === 1 ? '1st' : place === 2 ? '2nd' : place === 3 ? '3rd' : `${place}th`} Place
           </div>
         </div>
         
         <div style={{
-          width: '120px',
+          width: '100px',
           height: height,
           background: `linear-gradient(to bottom, ${color} 0%, rgba(255,255,255,0.1) 100%)`,
           borderTop: `4px solid ${color}`,
@@ -55,7 +52,7 @@ export const Podium: React.FC<Props> = ({ winners, employees, onReset }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '3rem',
+          fontSize: '2.5rem',
           fontWeight: 900,
           color: 'rgba(0,0,0,0.3)',
           boxShadow: `0 0 20px ${color}40`
@@ -65,6 +62,15 @@ export const Podium: React.FC<Props> = ({ winners, employees, onReset }) => {
       </div>
     );
   };
+
+  const orderedPlaces: number[] = [];
+  for (let i = 0; i < winners.length; i++) {
+     if (i % 2 !== 0) {
+        orderedPlaces.unshift(i);
+     } else {
+        orderedPlaces.push(i);
+     }
+  }
 
   return (
     <div style={{
@@ -96,11 +102,11 @@ export const Podium: React.FC<Props> = ({ winners, employees, onReset }) => {
       <div style={{
         display: 'flex',
         alignItems: 'flex-end',
-        marginBottom: '4rem'
+        justifyContent: 'center',
+        marginBottom: '4rem',
+        flexWrap: 'wrap'
       }}>
-        {renderStep(second, 2)}
-        {renderStep(first, 1)}
-        {renderStep(third, 3)}
+        {orderedPlaces.map(index => renderStep(winners[index], index + 1))}
       </div>
 
       <button 
