@@ -231,17 +231,24 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningP
         const finish = bodyA.label === 'finish_line' ? bodyA : (bodyB.label === 'finish_line' ? bodyB : null);
         const ball = bodyA.label.startsWith('ball_') ? bodyA : (bodyB.label.startsWith('ball_') ? bodyB : null);
 
+        const isBallA = bodyA.label.startsWith('ball_');
+        const isBallB = bodyB.label.startsWith('ball_');
+
         // Sound: Check for ball collision with pins or walls (for pings)
-        // We only want sound if at least one is a ball
-        if (physicsConfig.soundEnabled && (bodyA.label.startsWith('ball_') || bodyB.label.startsWith('ball_'))) {
-             // Basic impact velocity check
-             // Matter.js doesn't give impact velocity directly in collisionStart easily without calculation
-             // But we can approximate or just play sound.
-             // To prevent spam, maybe checking speed or limiting freq?
-             // For now, let's just play.
-             import('../audio/SoundManager').then(({ soundManager }) => {
-                soundManager.playPing(); 
-             });
+        if (physicsConfig.soundEnabled && (isBallA || isBallB)) {
+             // Find the Y position of the ball(s) involved
+             const yA = isBallA ? bodyA.position.y : 0;
+             const yB = isBallB ? bodyB.position.y : 0;
+             const ballY = Math.max(yA, yB);
+
+             // To prevent perpetual noise, we stop playing the ping sound once 
+             // the ball enters the catcher funnel area (below all the pins).
+             // The lowest pin is around BOARD_HEIGHT - 250.
+             if (ballY < BOARD_HEIGHT - 150) {
+               import('../audio/SoundManager').then(({ soundManager }) => {
+                  soundManager.playPing(); 
+               });
+             }
         }
 
         if (finish && ball) {
