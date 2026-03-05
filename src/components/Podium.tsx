@@ -5,9 +5,10 @@ interface Props {
   winners: string[]; // IDs
   employees: Employee[];
   onReset: () => void;
+  onClose: () => void;
 }
 
-export const Podium: React.FC<Props> = ({ winners, employees, onReset }) => {
+export const Podium: React.FC<Props> = ({ winners, employees, onReset, onClose }) => {
   const getEmployee = (id: string) => employees.find(e => e.id === id);
 
   const renderStep = (empId: string, place: number) => {
@@ -109,22 +110,41 @@ export const Podium: React.FC<Props> = ({ winners, employees, onReset }) => {
         {orderedPlaces.map(index => renderStep(winners[index], index + 1))}
       </div>
 
-      <button 
-        onClick={onReset}
-        style={{
-          padding: '1rem 3rem',
-          background: 'white',
-          color: 'black',
-          border: 'none',
-          borderRadius: 'var(--border-radius-md)',
-          fontSize: '1.2rem',
-          fontWeight: 800,
-          cursor: 'pointer',
-          textTransform: 'uppercase'
-        }}
-      >
-        New Race
-      </button>
+      <div style={{ display: 'flex', gap: '2rem' }}>
+        <button 
+          onClick={onReset}
+          style={{
+            padding: '1rem 3rem',
+            background: 'white',
+            color: 'black',
+            border: 'none',
+            borderRadius: 'var(--border-radius-md)',
+            fontSize: '1.2rem',
+            fontWeight: 800,
+            cursor: 'pointer',
+            textTransform: 'uppercase'
+          }}
+        >
+          New Race
+        </button>
+
+        <button 
+          onClick={onClose}
+          style={{
+            padding: '1rem 3rem',
+            background: 'transparent',
+            color: 'white',
+            border: '2px solid white',
+            borderRadius: 'var(--border-radius-md)',
+            fontSize: '1.2rem',
+            fontWeight: 800,
+            cursor: 'pointer',
+            textTransform: 'uppercase'
+          }}
+        >
+          View Board
+        </button>
+      </div>
 
       <style>{`
         @keyframes fadeInUp {

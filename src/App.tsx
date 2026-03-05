@@ -27,6 +27,7 @@ function App() {
   const [raceId, setRaceId] = useState(0);
   const [lockedWinners, setLockedWinners] = useState<string[]>([]);
   const [activeWinners, setActiveWinners] = useState<string[]>([]);
+  const [showPodium, setShowPodium] = useState(false);
 
   // Derived state for all winners
   const allWinners = [...lockedWinners, ...activeWinners];
@@ -56,6 +57,7 @@ function App() {
   const handleStartRace = () => {
     setLockedWinners([]);
     setActiveWinners([]);
+    setShowPodium(false);
     setRaceId(prev => prev + 1);
     setAppState('RACE');
   };
@@ -64,6 +66,7 @@ function App() {
     // Lock current winners, clear active
     setLockedWinners(prev => [...prev, ...activeWinners]);
     setActiveWinners([]);
+    setShowPodium(false);
     setRaceId(prev => prev + 1);
   };
 
@@ -81,10 +84,10 @@ function App() {
         origin: { y: 0.6 }
       });
       
-      // Delay slightly to let the 3rd ball settle visually
+      // Delay slightly to let the last winning ball settle visually
       setTimeout(() => {
-        setAppState('RESULTS');
-      }, 1000);
+        setShowPodium(true);
+      }, 3000);
     }
   }, [lockedWinners.length, employees.length]);
 
@@ -105,10 +108,9 @@ function App() {
       background: 'radial-gradient(circle at center, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
       position: 'relative'
     }}>
-      {/* Header - Only hide if in Results mode to reduce clutter, or keep it. Let's keep small. */}
-      {appState !== 'RESULTS' && (
-        <h1 style={{ 
-          fontSize: '3rem', 
+      {/* Header */}
+      <h1 style={{ 
+        fontSize: '3rem',  
           textTransform: 'uppercase', 
           letterSpacing: '0.2em',
           background: 'linear-gradient(to right, var(--accent-cyan), var(--accent-purple))',
@@ -120,7 +122,6 @@ function App() {
         }}>
           Ball Race
         </h1>
-      )}
 
       {appState === 'CONFIG' && (
         <Configuration 
@@ -189,17 +190,62 @@ function App() {
               </button>
             )}
             
-            {/* If we have all winners, maybe show "Finish" or just auto-transition? 
-                Currently logic auto-transitions. */}
+            {/* Show Reset button when race is fully complete and we closed the podium */}
+            {allWinners.length >= winningPlaces && (
+              <button 
+                onClick={handleReset}
+                style={{
+                  marginTop: '1rem',
+                  width: '100%',
+                  padding: '0.5rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid white',
+                  borderRadius: '4px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  textTransform: 'uppercase'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+              >
+                ← Back to Config
+              </button>
+            )}
+            
+            {/* Show Podium button if it's hidden but race is complete */}
+            {allWinners.length >= winningPlaces && !showPodium && (
+              <button 
+                onClick={() => setShowPodium(true)}
+                style={{
+                  marginTop: '1rem',
+                  width: '100%',
+                  padding: '0.5rem',
+                  background: 'rgba(255, 215, 0, 0.2)',
+                  border: '1px solid #ffd700',
+                  borderRadius: '4px',
+                  color: '#ffd700',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  textTransform: 'uppercase'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 215, 0, 0.3)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 215, 0, 0.2)'}
+              >
+                ★ Show Winners
+              </button>
+            )}
+            
           </div>
         </div>
       )}
 
-      {appState === 'RESULTS' && (
+      {appState === 'RACE' && showPodium && (
         <Podium 
           winners={allWinners}
           employees={employees}
           onReset={handleReset}
+          onClose={() => setShowPodium(false)}
         />
       )}
     </div>
