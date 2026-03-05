@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Matter from 'matter-js';
 import type { Employee, PhysicsConfig } from '../types';
 
@@ -13,6 +13,8 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, existing
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
+  const gateRef = useRef<Matter.Body | null>(null);
+  const [isReleased, setIsReleased] = useState(false);
   
   // Configuration
   const BOARD_WIDTH = 800;
@@ -138,6 +140,7 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, existing
       render: { fillStyle: '#ff003c' },
       label: 'gate'
     });
+    gateRef.current = gate;
     World.add(engine.world, gate);
 
     // 2. Spawn all balls in a grid above the gate
@@ -187,17 +190,8 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, existing
     });
     World.add(engine.world, balls);
 
-    // 3. Release the gate after delay
-    const gateTimeout = setTimeout(() => {
-      World.remove(engine.world, gate);
-      
-      // Play start sound if enabled?
-      if (physicsConfig.soundEnabled) {
-         import('../audio/SoundManager').then(({ soundManager }) => {
-            soundManager.playPing(2.0); // Louder ping for start? Or maybe we need a dedicated start sound.
-         });
-      }
-    }, 2000); // 2 seconds delay
+    // 3. Release is now handled manually via the handleRelease function.
+    // The automatic timeout was removed.
 
     // 4. Collision Detection
     const localWinners: string[] = [];
@@ -258,7 +252,6 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, existing
 
     // Cleanup
     return () => {
-      clearTimeout(gateTimeout);
       Render.stop(render);
       Runner.stop(runner);
       World.clear(engine.world, false);
@@ -272,15 +265,57 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, existing
     };
   }, []); // Run once on mount (or when deps change, but we want stability)
 
+  const handleRelease = () => {
+    if (isReleased || !engineRef.current || !gateRef.current) return;
+    
+    Matter.World.remove(engineRef.current.world, gateRef.current);
+    setIsReleased(true);
+    
+    if (physicsConfig.soundEnabled) {
+      import('../audio/SoundManager').then(({ soundManager }) => {
+        soundManager.playPing(2.0); 
+      });
+    }
+  };
+
   return (
-    <div 
-      ref={sceneRef} 
-      style={{
-        border: '4px solid var(--bg-tertiary)', 
-        borderRadius: '16px',
-        overflow: 'hidden',
-        boxShadow: '0 0 50px rgba(0,0,0,0.5)'
-      }}
-    />
+    <div style={{ position: 'relative' }}>
+      <div 
+        ref={sceneRef} 
+        style={{
+          border: '4px solid var(--bg-tertiary)', 
+          borderRadius: '16px',
+          overflow: 'hidden',
+          boxShadow: '0 0 50px rgba(0,0,0,0.5)'
+        }}
+      />
+      {!isReleased && (
+        <button 
+          onClick={handleRelease}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '1.5rem 3rem',
+            fontSize: '2rem',
+            fontWeight: 800,
+            background: 'linear-gradient(45deg, var(--accent-magenta), var(--accent-purple))',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            zIndex: 10,
+            boxShadow: '0 0 30px rgba(191,0,255,0.6)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.05)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)'}
+        >
+          Release Balls
+        </button>
+      )}
+    </div>
   );
 };
