@@ -80,7 +80,8 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningP
         const x = xOffset + col * spacing;
         const y = startY + row * spacing;
         
-        if (x > 20 && x < BOARD_WIDTH - 20) {
+        // Ensure at least 35px clearance from edges for the 14px radius balls (28px diameter)
+        if (x > 35 && x < BOARD_WIDTH - 35) {
           pins.push(Bodies.circle(x, y, 4, {
             isStatic: true,
             render: { fillStyle: '#ffffff' },
@@ -121,10 +122,27 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningP
 
     // 3. Spawn Balls logic
     // We need to mix the balls up so they aren't clumped by employee
-    let allBalls: { employeeId: string, color: string }[] = [];
+    let allBalls: { employeeId: string, color: string, initials: string, textColor: string }[] = [];
     employees.forEach(emp => {
+      const getInitials = (name: string) => {
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      };
+      const getContrastColor = (hex: string) => {
+        const h = hex.replace('#', '');
+        const r = parseInt(h.substring(0, 2), 16);
+        const g = parseInt(h.substring(2, 4), 16);
+        const b = parseInt(h.substring(4, 6), 16);
+        const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        return (yiq >= 128) ? '#000000' : '#ffffff';
+      };
+      
+      const initials = getInitials(emp.name);
+      const textColor = getContrastColor(emp.color);
+      
       for(let i=0; i<emp.entries; i++) {
-        allBalls.push({ employeeId: emp.id, color: emp.color });
+        allBalls.push({ employeeId: emp.id, color: emp.color, initials, textColor });
       }
     });
     // Shuffle using Fisher-Yates for better randomness
@@ -146,7 +164,7 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningP
 
     // 2. Spawn all balls in a grid above the gate
     const balls: Matter.Body[] = [];
-    const ballRadius = 8;
+    const ballRadius = 14; 
     const cols = Math.floor((BOARD_WIDTH - 100) / (ballRadius * 2.5)); // Space them out
     const startX = 50;
 
@@ -185,6 +203,10 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningP
         label: `ball_${ballData.employeeId}`,
         render: {
           fillStyle: ballData.color
+        },
+        plugin: {
+          initials: ballData.initials,
+          textColor: ballData.textColor
         }
       });
       balls.push(ball);
@@ -244,6 +266,29 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningP
           }
         }
       });
+    });
+
+    // 5. Custom render for initials
+    Events.on(render, 'afterRender', () => {
+      const context = render.context;
+      if (!context) return;
+      
+      context.font = 'bold 10px sans-serif';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      // Slight shadow to help text stand out against light colors
+      context.shadowColor = 'rgba(0, 0, 0, 0.4)';
+      context.shadowBlur = 2;
+
+      balls.forEach(({ position, plugin, render: bodyRender }) => {
+         if (plugin.initials && bodyRender.visible) {
+             context.fillStyle = plugin.textColor || '#ffffff';
+             context.fillText(plugin.initials, position.x, position.y);
+         }
+      });
+      
+      // Reset shadow for next tick
+      context.shadowBlur = 0;
     });
 
     // Run
