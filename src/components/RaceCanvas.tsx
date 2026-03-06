@@ -19,7 +19,7 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningP
   
   // Configuration
   const BOARD_WIDTH = 800;
-  const BOARD_HEIGHT = Math.max(600, window.innerHeight - 250); // Responsive height with padding
+  const BOARD_HEIGHT = Math.max(600, window.innerHeight - 100); // Responsive height with 50px top/bottom padding
   
   useEffect(() => {
     if (!sceneRef.current) return;

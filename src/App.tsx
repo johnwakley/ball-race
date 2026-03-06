@@ -109,8 +109,9 @@ function App() {
       position: 'relative'
     }}>
       {/* Header */}
-      <h1 style={{ 
-        fontSize: '3rem',  
+      {appState === 'CONFIG' && (
+        <h1 style={{ 
+          fontSize: '3rem',  
           textTransform: 'uppercase', 
           letterSpacing: '0.2em',
           background: 'linear-gradient(to right, var(--accent-cyan), var(--accent-purple))',
@@ -122,6 +123,7 @@ function App() {
         }}>
           Ball Race
         </h1>
+      )}
 
       {appState === 'CONFIG' && (
         <Configuration 
@@ -138,7 +140,7 @@ function App() {
       )}
 
       {appState === 'RACE' && (
-        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
+        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '50px 0' }}>
           <RaceCanvas 
             key={raceId}
             employees={employees}
