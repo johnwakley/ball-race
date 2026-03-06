@@ -66,11 +66,11 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningP
 
     // Pins (Pachinko Style)
     const pins: Matter.Body[] = [];
-    const startY = 150;
+    const startY = 250;
     const spacing = 50;
     // We want at least 150px clearance from the bottom of the pins to the start of the funnel (BOARD_HEIGHT - 100)
     // So pins should not go lower than BOARD_HEIGHT - 250
-    const rows = Math.floor((BOARD_HEIGHT - 350) / spacing);
+    const rows = Math.floor((BOARD_HEIGHT - 450) / spacing);
 
     for (let row = 0; row < rows; row++) {
       const cols = row % 2 === 0 ? 15 : 16;
@@ -153,7 +153,7 @@ export const RaceCanvas: React.FC<Props> = ({ employees, physicsConfig, winningP
 
     // GATE MECHANISM
     // 1. Create the gate
-    const gateY = 100;
+    const gateY = 200;
     const gate = Bodies.rectangle(BOARD_WIDTH / 2, gateY, BOARD_WIDTH, 20, {
       isStatic: true,
       render: { fillStyle: '#ff003c' },
